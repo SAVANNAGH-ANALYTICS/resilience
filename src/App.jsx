@@ -139,13 +139,26 @@ export default function ResilienceApp() {
     URL.revokeObjectURL(url);
   };
 
+   const exportJSON = () => {
+    const payload = { version: 1, data };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `resilience-checklists-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const importJSON = (file) => {
     const r = new FileReader();
     r.onload = () => {
       try {
         const parsed = JSON.parse(r.result);
-        // Accept either { data: ... } or raw data
-        const imported = parsed?.data ?? parsed;
+        // Accept either { data: ... } or raw object
+        const imported = parsed && typeof parsed === 'object' && 'data' in parsed ? parsed.data : parsed;
         setData(imported);
       } catch (e) {
         alert('Import failed: ' + e.message);
@@ -153,6 +166,7 @@ export default function ResilienceApp() {
     };
     r.readAsText(file);
   };
+
 
     <div className=\"min-h-screen bg-emerald-50 text-emerald-900 flex flex-col\">
       <header className=\"sticky top-0 z-10 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow\">
