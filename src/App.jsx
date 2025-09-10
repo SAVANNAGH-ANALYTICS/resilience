@@ -129,8 +129,11 @@ export default function ResilienceApp() {
   const exportJSON = () => {
     const blob = new Blob([JSON.stringify({ version:1, data }, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob); const a = document.createElement("a");
-    a.href = url; a.download = `resilience-checklists-${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(url);
-  };
+    a.href = url;
+a.download = `resilience-checklists-${new Date().toISOString().slice(0,10)}.json`;
+a.click();
+URL.revokeObjectURL(url);
+
   const importJSON = (file) => { const r = new FileReader(); r.onload = () => { try { const { data: imp } = JSON.parse(r.result); setData(imp); } catch(e){ alert(\"Import failed: \"+e.message);} }; r.readAsText(file); };
 
   return (
