@@ -126,17 +126,34 @@ export default function ResilienceApp() {
   const resetDomain = () => { if (confirm(`Reset \"${current.title}\" checklist?`)) setData(prev => ({ ...prev, [current.id]: prev[current.id].map(()=>false) })); };
   const resetAll = () => { if (confirm("Reset ALL domains?")) { const fresh = {}; DOMAIN_DATA.forEach(d=> fresh[d.id]=d.items.map(()=>false)); setData(fresh);} };
 
-  const exportJSON = () => {
-    const blob = new Blob([JSON.stringify({ version:1, data }, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob); const a = document.createElement("a");
+   const exportJSON = () => {
+    const payload = { version: 1, data };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
     a.href = url;
-a.download = `resilience-checklists-${new Date().toISOString().slice(0,10)}.json`;
-a.click();
-URL.revokeObjectURL(url);
+    a.download = `resilience-checklists-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
-  const importJSON = (file) => { const r = new FileReader(); r.onload = () => { try { const { data: imp } = JSON.parse(r.result); setData(imp); } catch(e){ alert(\"Import failed: \"+e.message);} }; r.readAsText(file); };
+  const importJSON = (file) => {
+    const r = new FileReader();
+    r.onload = () => {
+      try {
+        const parsed = JSON.parse(r.result);
+        // Accept either { data: ... } or raw data
+        const imported = parsed?.data ?? parsed;
+        setData(imported);
+      } catch (e) {
+        alert('Import failed: ' + e.message);
+      }
+    };
+    r.readAsText(file);
+  };
 
-  return (
     <div className=\"min-h-screen bg-emerald-50 text-emerald-900 flex flex-col\">
       <header className=\"sticky top-0 z-10 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow\">
         <div className=\"max-w-5xl mx-auto px-4 py-3 flex items-center justify-between\">
